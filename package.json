@@ -1,0 +1,26 @@
+{
+  "name": "fs-route",
+  "version": "0.0.1",
+  "description": "file system based router for node servers",
+  "main": "index.js",
+  "scripts": {
+    "demo:express": "node demo/express",
+    "demo:micro": "micro demo/micro"
+  },
+  "author": "Billy Moon",
+  "license": "ISC",
+  "devDependencies": {
+    "@std/esm": "^0.2.2",
+    "async-to-gen": "^1.3.3",
+    "express": "^4.15.4",
+    "micro": "^8.0.2"
+  },
+  "@std/esm": {
+    "esm": "js",
+    "cjs": true
+  },
+  "files": [
+    "index.js",
+    "es5.js"
+  ]
+}
