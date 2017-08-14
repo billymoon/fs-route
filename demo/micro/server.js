@@ -21,7 +21,7 @@ export default (req, res) => {
     if (handler) {
       // pass request, response, query and params to handler
       // return the result to micro to handle
-      return handler(req, res, { query, params })
+      return handler({ req, res, query, params })
     } else {
       send(res, 404, { error: 'not found' })
     }

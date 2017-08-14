@@ -6,6 +6,6 @@ const delayed = () => {
   })
 }
 
-module.exports = (req, res) => {
-  return delayed().then(random => ({ query: req.query, random: random, __dirname: __dirname, env: process.env }))
+module.exports = (conf) => {
+  return delayed().then(random => ({ query: conf.req.query, random: random }))
 }

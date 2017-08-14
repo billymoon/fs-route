@@ -2,6 +2,7 @@
   "name": "fs-route",
   "version": "0.0.1",
   "description": "file system based router for node servers",
+  "repo": "https://github.com/billymoon/fs-route",
   "main": "index.js",
   "scripts": {
     "demo:express": "node demo/express",

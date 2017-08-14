@@ -1,3 +1,3 @@
-import lorem from './lorem'
+import handler from './_qty'
 
-export default () => `{"lorem": "${lorem()}"}`
+export default () => handler({ params: { qty: 10 } })

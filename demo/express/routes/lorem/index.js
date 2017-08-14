@@ -1,3 +1,3 @@
-const lorem = require('./lorem')
+const handler = require('./_qty')
 
-module.exports = () => `{"lorem": "${lorem()}"}`
+module.exports = () => handler({ params: { qty: 12 } })

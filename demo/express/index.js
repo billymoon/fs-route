@@ -14,7 +14,7 @@ const matcher = route(path.join(__dirname, '/routes'))
 const app = express()
 
 // handle all routes
-app.get('*', function (req, res) {
+app.all('*', function (req, res) {
   // set json content type
   res.set('Content-Type', 'application/json')
 
@@ -30,7 +30,7 @@ app.get('*', function (req, res) {
     // try to handle response, catching errors and sendong 500 error as response
     try {
       // pass request, response, query and params to handler
-      const handled = handler(req, res, { query, params })
+      const handled = handler({ req, res, query, params })
       // if handled result is a promise, resolve it and send as response
       // else send as response directly
       if (handled.then) {

@@ -1,1 +1,1 @@
-export default req => `{"whoami": "I am the root index handler", "callingMethod": "${req.method}"}`
+export default ({ req: { method } }) => `{"whoami": "I am the root index handler", "callingMethod": "${method}"}`

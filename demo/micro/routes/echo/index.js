@@ -1,5 +1,3 @@
-import { send } from 'micro'
-
 const delayed = () => {
   return new Promise(resolve => {
     setTimeout(() => {
@@ -8,8 +6,7 @@ const delayed = () => {
   })
 }
 
-export default async (req, res) => {
+export default async ({ query }) => {
   const random = await delayed()
-
-  send(res, 200, { query: req.query, random: random, __dirname: __dirname, env: process.env })
+  return { query, random }
 }
