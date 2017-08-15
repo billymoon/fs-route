@@ -40,7 +40,6 @@ const router = (routesDir, config, importerOverride) => {
         return left.method !== 'index' ? -1 : 1
       }
     }))
-    .then(routes => routes.sort((config || {}).sort || (() => 0)))
     .then(routes => req => {
       const split = req.url.split(/\?(.+)/)
       const url = split[0]

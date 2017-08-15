@@ -16,8 +16,6 @@ test('loads module', () => {
 
 test('handles GET / with get.js', () => {
   const route = unconfiguredMatcher({ url: '/', method: 'GET' })
-  expect(route.query).toEqual({})
-  expect(route.params).toEqual({})
   expect(route.handler).toBeInstanceOf(Function)
   expect(typeof route.handler()).toEqual('string')
   expect(JSON.parse(route.handler()).whoami).toMatch('GET handler for root')
@@ -26,8 +24,6 @@ test('handles GET / with get.js', () => {
 ;['POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'].forEach(method => {
   test(`handles ${method} / with index.js`, () => {
     const route = unconfiguredMatcher({ url: '/', method: method })
-    expect(route.query).toEqual({})
-    expect(route.params).toEqual({})
     expect(route.handler).toBeInstanceOf(Function)
     expect(typeof route.handler({ req: { method: method } })).toEqual('string')
     expect(JSON.parse(route.handler({ req: { method: method } })).whoami).toMatch('root index handler')
@@ -46,6 +42,12 @@ test('throws for OTHER http methods', () => {
 })
 
 test('handles subfolder /echo', () => {
+  const route = unconfiguredMatcher({ url: '/echo', method: 'GET' })
+  expect(route.handler).toBeInstanceOf(Function)
+  expect(route.handler()).toBeInstanceOf(Promise)
+})
+
+test('handles no params or querystring correctly for /echo', () => {
   const route = unconfiguredMatcher({ url: '/echo', method: 'GET' })
   expect(route.query).toEqual({})
   expect(route.params).toEqual({})
