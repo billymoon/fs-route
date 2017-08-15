@@ -5,7 +5,7 @@ import path from 'path'
 import { send } from 'micro'
 
 // fs route dependency
-import route from '../..'
+import route from '../../esm'
 
 // initialise router
 const promisedRouter = route(path.join(__dirname, 'routes'))

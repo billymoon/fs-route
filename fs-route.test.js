@@ -1,13 +1,13 @@
 /* global expect,test,beforeAll */
 const path = require('path')
-const fsRoute = require('./es5')
+const fsRoute = require('.')
 
 let unconfiguredMatcher
 let configuredMatcher
 
 beforeAll(() => Promise.all([
   fsRoute(path.join(__dirname, 'demo', 'express', 'routes')).then(promisedMatcher => (unconfiguredMatcher = promisedMatcher)),
-  fsRoute(path.join(__dirname, 'demo', 'express', 'routes'), {methods: ['index', 'get']}).then(promisedMatcher => (configuredMatcher = promisedMatcher))
+  fsRoute(path.join(__dirname, 'demo', 'express', 'routes'), { methods: ['index', 'get'] }).then(promisedMatcher => (configuredMatcher = promisedMatcher))
 ]))
 
 test('loads module', () => {
@@ -32,10 +32,8 @@ test('handles GET / with get.js', () => {
     expect(typeof route.handler({ req: { method: method } })).toEqual('string')
     expect(JSON.parse(route.handler({ req: { method: method } })).whoami).toMatch('root index handler')
   })
-})
 
-;['POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'].forEach(method => {
-  test(`handles ${method} / with index.js`, () => {
+  test(`when configured for get requests, throws for ${method} requests to /`, () => {
     expect(() => configuredMatcher({ url: '/', method: method })).toThrow('unsupported http method')
   })
 })
@@ -43,6 +41,8 @@ test('handles GET / with get.js', () => {
 test('throws for OTHER http methods', () => {
   expect(() => unconfiguredMatcher({ url: '/', method: 'GET' })).not.toThrow()
   expect(() => unconfiguredMatcher({ url: '/', method: 'OTHER' })).toThrow('unsupported http method')
+  expect(() => configuredMatcher({ url: '/', method: 'GET' })).not.toThrow()
+  expect(() => configuredMatcher({ url: '/', method: 'OTHER' })).toThrow('unsupported http method')
 })
 
 test('handles subfolder /echo', () => {

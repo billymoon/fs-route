@@ -5,7 +5,7 @@ const path = require('path')
 const express = require('express')
 
 // fs route dependency
-const route = require('../../es5')
+const route = require('../..')
 
 // initialise router
 route(path.join(__dirname, '/routes')).then(matcher => {
