@@ -8,10 +8,13 @@ import { send } from 'micro'
 import route from '../..'
 
 // initialise router
-const matcher = route(path.join(__dirname, 'routes'))
+const promisedRouter = route(path.join(__dirname, 'routes'))
 
 // export default function to be handled by micro
-export default (req, res) => {
+export default async (req, res) => {
+  // get matcher from promised router
+  const matcher = await promisedRouter
+
   // try to get matched routes from fs route
   // catch errors sending 500 error
   try {

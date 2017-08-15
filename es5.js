@@ -4,10 +4,14 @@ const path = require('path')
 const querystring = require('querystring')
 const fs = require('fs')
 
+function validMethod (method) {
+  return ['index', 'get', 'post', 'put', 'patch', 'delete', 'options'].indexOf(method) !== -1
+}
+
 function findRoutes (startpath) {
   return fs.readdirSync(startpath).reduce((memo, currentpath) => {
     const fullpath = path.join(startpath, currentpath)
-    if (['index', 'get', 'post', 'put', 'patch', 'delete', 'options'].indexOf(path.basename(currentpath, '.js')) !== -1) {
+    if (validMethod(path.basename(currentpath, '.js'))) {
       memo.push(fullpath)
     } else if (fs.statSync(fullpath).isDirectory()) {
       memo = memo.concat(findRoutes(fullpath))
@@ -19,10 +23,8 @@ function findRoutes (startpath) {
 const router = (routesDir, config, importerOverride) => {
   const importer = importerOverride || (file => new Promise(resolve => resolve(require(file))))
 
-  let routes = null
-
-  Promise.all(findRoutes(routesDir).map(file => {
-    return importer(file).then(imported => {
+  return Promise.all(findRoutes(routesDir)
+    .map(file => importer(file).then(imported => {
       const routePath = path.dirname('/' + path.relative(routesDir, file))
       return {
         method: path.basename(file, '.js'),
@@ -30,38 +32,35 @@ const router = (routesDir, config, importerOverride) => {
         matcher: RegExp('^' + routePath.replace(/\/_.+?(\/|$)/g, '/([^/]+)$1') + '$'),
         params: (routePath.match(/\/_([^/]+)/g) || []).map(param => param.slice(2))
       }
-    })
-  })).then(scannedRoutes => {
-    routes = scannedRoutes.sort((left, right) => {
+    })))
+    .then(routes => routes.sort((left, right) => {
       if (!left.params.length !== !right.params.length) {
         return left.params.length ? 1 : -1
       } else {
         return left.method !== 'index' ? -1 : 1
       }
-    }).sort((config || {}).sort || (() => 0))
-  })
+    }))
+    .then(routes => routes.sort((config || {}).sort || (() => 0)))
+    .then(routes => req => {
+      const split = req.url.split(/\?(.+)/)
+      const url = split[0]
+      const urlQuery = split[1]
 
-  return req => {
-    if (routes === null) {
-      throw Error('route initialisation not yet complete')
-    }
+      const query = querystring.parse(urlQuery)
+      const route = routes.filter(route => {
+        if (!validMethod(req.method.toLowerCase())) {
+          throw Error('unsupported http method')
+        }
+        return (route.method === req.method.toLowerCase() || route.method === 'index') && route.matcher.test(url)
+      })[0]
 
-    const split = req.url.split(/\?(.+)/)
-    const url = split[0]
-    const urlQuery = split[1]
+      const params = url.match(route.matcher).slice(1).reduce((memo, param, index) => {
+        memo[route.params[index]] = param
+        return memo
+      }, {})
 
-    const query = querystring.parse(urlQuery)
-    const route = routes
-      .filter(route => (route.method === req.method.toLowerCase() || route.method === 'index') && route.matcher.test(url))
-      .concat([{ handler: null }])[0]
-
-    const params = url.match(route.matcher).slice(1).reduce((memo, param, index) => {
-      memo[route.params[index]] = param
-      return memo
-    }, {})
-
-    return { query, params, handler: route.handler }
-  }
+      return { query, params, handler: route.handler }
+    })
 }
 
 module.exports = router

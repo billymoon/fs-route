@@ -6,7 +6,8 @@
   "main": "index.js",
   "scripts": {
     "demo:express": "node demo/express",
-    "demo:micro": "micro demo/micro"
+    "demo:micro": "micro demo/micro",
+    "test": "jest"
   },
   "author": "Billy Moon",
   "license": "ISC",
@@ -14,6 +15,7 @@
     "@std/esm": "^0.2.2",
     "async-to-gen": "^1.3.3",
     "express": "^4.15.4",
+    "jest": "^20.0.4",
     "micro": "^8.0.2"
   },
   "@std/esm": {
