@@ -4,17 +4,17 @@ const path = require('path')
 const querystring = require('querystring')
 const fs = require('fs')
 
-function validMethod (method) {
-  return ['index', 'get', 'post', 'put', 'patch', 'delete', 'options'].indexOf(method) !== -1
+function validMethod (method, methods) {
+  return (methods || ['index', 'get', 'post', 'put', 'patch', 'delete', 'options']).indexOf(method) !== -1
 }
 
-function findRoutes (startpath) {
+function findRoutes (startpath, methods) {
   return fs.readdirSync(startpath).reduce((memo, currentpath) => {
     const fullpath = path.join(startpath, currentpath)
-    if (validMethod(path.basename(currentpath, '.js'))) {
+    if (validMethod(path.basename(currentpath, '.js'), methods)) {
       memo.push(fullpath)
     } else if (fs.statSync(fullpath).isDirectory()) {
-      memo = memo.concat(findRoutes(fullpath))
+      memo = memo.concat(findRoutes(fullpath, methods))
     }
     return memo
   }, [])
@@ -23,7 +23,7 @@ function findRoutes (startpath) {
 const router = (routesDir, config, importerOverride) => {
   const importer = importerOverride || (file => new Promise(resolve => resolve(require(file))))
 
-  return Promise.all(findRoutes(routesDir)
+  return Promise.all(findRoutes(routesDir, (config || {}).methods)
     .map(file => importer(file).then(imported => {
       const routePath = path.dirname('/' + path.relative(routesDir, file))
       return {
@@ -48,7 +48,7 @@ const router = (routesDir, config, importerOverride) => {
 
       const query = querystring.parse(urlQuery)
       const route = routes.filter(route => {
-        if (!validMethod(req.method.toLowerCase())) {
+        if (!validMethod(req.method.toLowerCase(), (config || {}).methods)) {
           throw Error('unsupported http method')
         }
         return (route.method === req.method.toLowerCase() || route.method === 'index') && route.matcher.test(url)
