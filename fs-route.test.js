@@ -2,16 +2,20 @@
 const path = require('path')
 const fsRoute = require('./es5')
 
-let matcher
+let unconfiguredMatcher
+let configuredMatcher
 
-beforeAll(() => fsRoute(path.join(__dirname, 'demo', 'express', 'routes')).then(promisedMatcher => (matcher = promisedMatcher)))
+beforeAll(() => Promise.all([
+  fsRoute(path.join(__dirname, 'demo', 'express', 'routes')).then(promisedMatcher => (unconfiguredMatcher = promisedMatcher)),
+  fsRoute(path.join(__dirname, 'demo', 'express', 'routes'), {methods: ['index', 'get']}).then(promisedMatcher => (configuredMatcher = promisedMatcher))
+]))
 
 test('loads module', () => {
-  expect(matcher).toBeInstanceOf(Function)
+  expect(unconfiguredMatcher).toBeInstanceOf(Function)
 })
 
 test('handles GET / with get.js', () => {
-  const route = matcher({ url: '/', method: 'GET' })
+  const route = unconfiguredMatcher({ url: '/', method: 'GET' })
   expect(route.query).toEqual({})
   expect(route.params).toEqual({})
   expect(route.handler).toBeInstanceOf(Function)
@@ -21,7 +25,7 @@ test('handles GET / with get.js', () => {
 
 ;['POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'].forEach(method => {
   test(`handles ${method} / with index.js`, () => {
-    const route = matcher({ url: '/', method: method })
+    const route = unconfiguredMatcher({ url: '/', method: method })
     expect(route.query).toEqual({})
     expect(route.params).toEqual({})
     expect(route.handler).toBeInstanceOf(Function)
@@ -30,13 +34,19 @@ test('handles GET / with get.js', () => {
   })
 })
 
+;['POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'].forEach(method => {
+  test(`handles ${method} / with index.js`, () => {
+    expect(() => configuredMatcher({ url: '/', method: method })).toThrow('unsupported http method')
+  })
+})
+
 test('throws for OTHER http methods', () => {
-  expect(() => matcher({ url: '/', method: 'GET' })).not.toThrow()
-  expect(() => matcher({ url: '/', method: 'OTHER' })).toThrow('unsupported http method')
+  expect(() => unconfiguredMatcher({ url: '/', method: 'GET' })).not.toThrow()
+  expect(() => unconfiguredMatcher({ url: '/', method: 'OTHER' })).toThrow('unsupported http method')
 })
 
 test('handles subfolder /echo', () => {
-  const route = matcher({ url: '/echo', method: 'GET' })
+  const route = unconfiguredMatcher({ url: '/echo', method: 'GET' })
   expect(route.query).toEqual({})
   expect(route.params).toEqual({})
   expect(route.handler).toBeInstanceOf(Function)
@@ -44,21 +54,21 @@ test('handles subfolder /echo', () => {
 })
 
 test('handles params in /lorem/_qty', () => {
-  const route = matcher({ url: '/lorem/4', method: 'GET' })
+  const route = unconfiguredMatcher({ url: '/lorem/4', method: 'GET' })
   expect(route.query).toEqual({})
   expect(route.params).toEqual({ qty: '4' })
   expect(route.handler).toBeInstanceOf(Function)
 })
 
 test('handles querystring in /echo', () => {
-  const route = matcher({ url: '/echo?good&bad=ugly', method: 'GET' })
+  const route = unconfiguredMatcher({ url: '/echo?good&bad=ugly', method: 'GET' })
   expect(route.query).toEqual({ good: '', bad: 'ugly' })
   expect(route.params).toEqual({})
   expect(route.handler).toBeInstanceOf(Function)
 })
 
 test('handles params with querystring in /lorem/_qty', () => {
-  const route = matcher({ url: '/lorem/4?good&bad=ugly', method: 'GET' })
+  const route = unconfiguredMatcher({ url: '/lorem/4?good&bad=ugly', method: 'GET' })
   expect(route.query).toEqual({ good: '', bad: 'ugly' })
   expect(route.params).toEqual({ qty: '4' })
   expect(route.handler).toBeInstanceOf(Function)
