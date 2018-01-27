@@ -23,7 +23,9 @@ function findRoutes (startpath, methods) {
 const router = (routesDir, config, importerOverride) => {
   const importer = importerOverride || (file => new Promise(resolve => resolve(require(file))))
 
-  return Promise.all(findRoutes(routesDir, (config || {}).methods)
+  const restrictedRoutesDir = routesDir + ((config || {}).restrict || '')
+
+  return Promise.all(findRoutes(restrictedRoutesDir, (config || {}).methods)
     .map(file => importer(file).then(imported => {
       const routePath = path.dirname('/' + path.relative(routesDir, file))
       return {
@@ -53,12 +55,12 @@ const router = (routesDir, config, importerOverride) => {
         return (route.method === req.method.toLowerCase() || route.method === 'index') && route.matcher.test(url)
       })[0]
 
-      const params = url.match(route.matcher).slice(1).reduce((memo, param, index) => {
+      const params = !route ? {} : url.match(route.matcher).slice(1).reduce((memo, param, index) => {
         memo[route.params[index]] = param
         return memo
       }, {})
 
-      return { query, params, handler: route.handler }
+      return { query, params, handler: !route ? null : route.handler }
     })
 }
 

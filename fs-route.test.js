@@ -4,10 +4,12 @@ const fsRoute = require('.')
 
 let unconfiguredMatcher
 let configuredMatcher
+let restrictedMatcher
 
 beforeAll(() => Promise.all([
   fsRoute(path.join(__dirname, 'demo', 'express', 'routes')).then(promisedMatcher => (unconfiguredMatcher = promisedMatcher)),
-  fsRoute(path.join(__dirname, 'demo', 'express', 'routes'), { methods: ['index', 'get'] }).then(promisedMatcher => (configuredMatcher = promisedMatcher))
+  fsRoute(path.join(__dirname, 'demo', 'express', 'routes'), { methods: ['index', 'get'] }).then(promisedMatcher => (configuredMatcher = promisedMatcher)),
+  fsRoute(path.join(__dirname, 'demo', 'express', 'routes'), { restrict: '/lorem' }).then(promisedMatcher => (restrictedMatcher = promisedMatcher))
 ]))
 
 test('loads module', () => {
@@ -45,6 +47,24 @@ test('handles subfolder /echo', () => {
   const route = unconfiguredMatcher({ url: '/echo', method: 'GET' })
   expect(route.handler).toBeInstanceOf(Function)
   expect(route.handler()).toBeInstanceOf(Promise)
+})
+
+test('handles restricted and unrestricted routes, returning null handler for unkown path', () => {
+  expect(configuredMatcher({ url: '/unknown', method: 'GET' }).handler).toBe(null)
+  expect(restrictedMatcher({ url: '/unknown', method: 'GET' }).handler).toBe(null)
+})
+
+test('handles restricted routes, restricting out of bounds paths', () => {
+  expect(configuredMatcher({ url: '/echo', method: 'GET' }).handler).toBeInstanceOf(Function)
+  expect(restrictedMatcher({ url: '/echo', method: 'GET' }).handler).toBe(null)
+})
+
+test('handles restricted routes, handling matched paths', () => {
+  expect(restrictedMatcher({ url: '/lorem', method: 'GET' }).handler).toBeInstanceOf(Function)
+})
+
+test('handles restricted routes, handling paramaterized paths', () => {
+  expect(restrictedMatcher({ url: '/lorem/4', method: 'GET' }).handler).toBeInstanceOf(Function)
 })
 
 test('handles no params or querystring correctly for /echo', () => {
