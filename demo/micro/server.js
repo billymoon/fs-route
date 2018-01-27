@@ -18,7 +18,7 @@ export default async (req, res) => {
   // try to get matched routes from fs route
   // catch errors sending 500 error
   try {
-    const { handler, query, params } = matcher(req)
+    const { handler, query, params } = matcher(req.url, req.method)
     // if there is a handler, use it to handle the response
     // else respond with 404
     if (handler) {

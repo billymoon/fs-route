@@ -18,7 +18,7 @@ route(path.join(__dirname, '/routes')).then(matcher => {
     res.set('Content-Type', 'application/json')
 
     // get matched routes from fs route
-    const matched = matcher(req)
+    const matched = matcher(req.url, req.method)
     const handler = matched.handler
     const query = matched.query
     const params = matched.params

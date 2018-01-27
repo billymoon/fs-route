@@ -23,7 +23,7 @@ function findRoutes (startpath, methods) {
 const router = (routesDir, config, importerOverride) => {
   const importer = importerOverride || (file => new Promise(resolve => resolve(require(file))))
 
-  const restrictedRoutesDir = routesDir + ((config || {}).restrict || '')
+  const restrictedRoutesDir = path.join(routesDir, ((config || {}).restrict || ''))
 
   return Promise.all(findRoutes(restrictedRoutesDir, (config || {}).methods)
     .map(file => importer(file).then(imported => {
@@ -42,20 +42,20 @@ const router = (routesDir, config, importerOverride) => {
         return left.method !== 'index' ? -1 : 1
       }
     }))
-    .then(routes => req => {
-      const split = req.url.split(/\?(.+)/)
-      const url = split[0]
+    .then(routes => (url, method) => {
+      const split = url.split(/\?(.+)/)
+      const urlPath = split[0]
       const urlQuery = split[1]
 
       const query = querystring.parse(urlQuery)
       const route = routes.filter(route => {
-        if (!validMethod(req.method.toLowerCase(), (config || {}).methods)) {
+        if (!validMethod(method.toLowerCase(), (config || {}).methods)) {
           throw Error('unsupported http method')
         }
-        return (route.method === req.method.toLowerCase() || route.method === 'index') && route.matcher.test(url)
+        return (route.method === method.toLowerCase() || route.method === 'index') && route.matcher.test(urlPath)
       })[0]
 
-      const params = !route ? {} : url.match(route.matcher).slice(1).reduce((memo, param, index) => {
+      const params = !route ? {} : urlPath.match(route.matcher).slice(1).reduce((memo, param, index) => {
         memo[route.params[index]] = param
         return memo
       }, {})
