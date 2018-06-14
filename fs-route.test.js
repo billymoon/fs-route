@@ -95,3 +95,16 @@ test('handles params with querystring in /lorem/_qty', () => {
   expect(route.params).toEqual({ qty: '4' })
   expect(route.handler).toBeInstanceOf(Function)
 })
+
+test('handles params with querystring with trailing slash', () => {
+  const route = unconfiguredMatcher('/lorem/4/?good&bad=ugly', 'GET')
+  expect(route.query).toEqual({ good: '', bad: 'ugly' })
+  expect(route.params).toEqual({ qty: '4' })
+  expect(route.handler).toBeInstanceOf(Function)
+})
+
+test('handles params at root with querystring with trailing slash', () => {
+  const route = unconfiguredMatcher('/?good&bad=ugly', 'GET')
+  expect(route.query).toEqual({ good: '', bad: 'ugly' })
+  expect(route.handler).toBeInstanceOf(Function)
+})

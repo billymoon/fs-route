@@ -44,7 +44,7 @@ const router = (routesDir, config, importerOverride) => {
     }))
     .then(routes => (url, method) => {
       const split = url.split(/\?(.+)/)
-      const urlPath = split[0]
+      const urlPath = split[0].replace(/^(.+?)\/+$/, '$1')
       const urlQuery = split[1]
 
       const query = querystring.parse(urlQuery)

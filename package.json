@@ -1,6 +1,6 @@
 {
   "name": "fs-route",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "file system based router for node servers",
   "repo": "https://github.com/billymoon/fs-route",
   "main": "index.js",
